@@ -13,29 +13,33 @@
   <script src="https://rawgit.com/allensarkisyan/VideoFrame/master/VideoFrame.min.js"></script>
   <style>
     #video {
-      width: 1024px <!--แก้ขนาดวีดีโอ เอาตามขนาดที่ต้องการ-->
-      position: fixed;  
+      width: 1024px <!--แก้ขนาดวีดีโอ เอาตามขนาดที่ต้องการ--> position: fixed;
       top: 0;
+    }
+    #overlay {
+      position: absolute; 
+      top: 50px; 
+      color: #FFF; 
+      text-align: center;
+      font-size: 30px;
+      background-color: #000000;
+      width: 640px;
+      padding: 10px 0;
+      z-index: 2147483647;
     }
   </style>
 </head>
 
 <body>
   <br>
-  <!-- <div class="container"> -->
-  <!-- <div class="panel panel-default"> -->
-  <!-- <div class="panel-body"> -->
-  <!-- <label class="control-label">Select File</label> -->
-  <!-- <input id="file" type='file' class="button" onchange="readURL(this);" /> -->
-  <!-- </div> -->
-  <!-- </div> -->
   <div class="panel panel-default">
     <div class="panel-body">
       <div class="row">
         <div class="col-sm-12">
           <video id="video" controls tabindex="0" autobuffer preload>
-            <source type="video/mp4; codecs=&quot;avc1.42E01E, mp4a.40.2&quot;" src="./GP031018.mp4"></source> <!--ใส่ชื่อวีดีโอ กด save แล้ว run หน้าเว็บใหม่-->
+            <source type="video/mp4; codecs=&quot;avc1.42E01E, mp4a.40.2&quot;" src="./aaa.mp4"></source> <!--ใส่ชื่อวีดีโอ กด save แล้ว run หน้าเว็บใหม่-->
           </video>
+
           <div id="controls">
             <button type="button" class="btn btn-default" id="seekBackward"><b><<</b></button>
             <button type="button" class="btn btn-default" id="play-pause">Play</button>
@@ -44,7 +48,7 @@
             <button type="button" class="btn btn-danger" id="clear">Clear Table</button>
           </div>
           <br>
-          <div class="frame">
+          <div id="overlay" class="frame">
             <div><b>Current Frame : <span id="currentFrame">0</span>F<b></div>
               <div><b>Frame Number Snapshort : <span id="frameNumberStart">0</span>F<b></div>
               <div><b>Time Start Snapshort: <span id="timeStart">0</span><b></div>
@@ -71,11 +75,14 @@
         </div>
       </div>
     </div>
-  <!-- </div> -->
   <script>
     var i = 0;
     var videoName = '';
 
+      var overlay= document.getElementById('overlay');
+      overlay.style.visibility= 'visible';
+
+    
     $(document).keydown(function(e){    
       if (e.keyCode == 83) { //S        
          playPause();
@@ -93,23 +100,12 @@
          clear();
          return true;
       }
-      else if (e.keyCode == 66) {//Space Bar         
+      else if (e.keyCode == 66) {//B       
          snapshort();
          return true;
       }
     }); 
     
-    <!-- function readURL(input) { -->
-      <!-- if (input.files && input.files[0]) { -->
-        <!-- videoName = input.files[0].name; -->
-        <!-- var reader = new FileReader(); -->
-        <!-- reader.onload = function(e) { -->
-          <!-- $('#video').attr('src', e.target.result); -->
-        <!-- }; -->
-        <!-- reader.readAsDataURL(input.files[0]); -->
-      <!-- } -->
-    <!-- } -->
-
     var video = VideoFrame({
       id: 'video',
       frameRate: 23.98,
@@ -122,20 +118,19 @@
       var frame = video.get();
       video.seekBackward(1,function() {
         console.log('seekBackward',frame);
-        $('#currentFrame').html(frame);
+        $('#currentFrame').html(frame-1);
       });
     };
        
     function seekForward() {
-      var frame = video.get();
+      var frame = video.get();      
       video.seekForward(1,function() {
-        console.log('seekForward',frame);
-        $('#currentFrame').html(frame);
+        console.log('seekForward',frame);  
+        $('#currentFrame').html(frame+1);        
       }); 
     };   
     
     function playPause() {
-      var i = 0;
       if (video.video.paused) {
         video.video.play();
         video.listen('frame');
@@ -157,7 +152,7 @@
       $('#timeStart').html(SMPTE);
       var tbody = '<tr><td>' + i + '</td><td>' + frame + '</td><td>' + SMPTE + '</td><td>' + $('video').find('Source:first').attr('src') + '</td></tr>';
       $('#tbody').append(tbody);
-      $("#video").attr("tabindex",-1).focus();
+      $("#video").attr("tabindex",-1).focus();      
     };  
 
     function clear() {
@@ -216,3 +211,4 @@
 </body>
 
 </html>
+
