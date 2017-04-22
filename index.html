@@ -27,6 +27,10 @@
       padding: 10px 0;
       z-index: 2147483647;
     }
+    th, td {
+      text-align: center;
+      vertical-align: middle;
+    }
   </style>
 </head>
 
@@ -45,7 +49,8 @@
             <button type="button" class="btn btn-default" id="play-pause">Play</button>
             <button type="button" class="btn btn-default" id="seekForward"><b>>></b></button>
             <button type="button" class="btn btn-success" id="Snapshort">Snapshort</button>
-            <button type="button" class="btn btn-danger" id="clear">Clear Table</button>
+            <button type="button" class="btn btn-danger" id="clear">Clear</button>
+            <button type="button" class="btn btn-warning" id="removeLastSnapshort" disabled>Undo</button>
           </div>
           <br>
           <div id="overlay" class="frame">
@@ -58,13 +63,14 @@
           <div class="col-sm-12">
             <h3>Data Record</h3>
             <p>The table is frame number and time(SMETP)record</p>
-            <table class="table table-striped" id="table">
+            <table class="table table-striped table-responsive" id="table">
               <thead>
                 <tr>
                   <th>No</th>
                   <th>Fram Number</th>
                   <th>Time</th>
                   <th>Video</th>
+                  <th>Delete</th>
                 </tr>
               </thead>
               <tbody id="tbody">
@@ -77,10 +83,10 @@
     </div>
   <script>
     var i = 0;
-    var videoName = '';
+    var videoName = '';   
 
-      var overlay= document.getElementById('overlay');
-      overlay.style.visibility= 'visible';
+    var overlay= document.getElementById('overlay');
+    overlay.style.visibility= 'visible';
 
     
     $(document).keydown(function(e){    
@@ -102,6 +108,10 @@
       }
       else if (e.keyCode == 66) {//B       
          snapshort();
+         return true;
+      }
+      else if (e.keyCode == 90) {//Z       
+         removeLastSnapshort();
          return true;
       }
     }); 
@@ -144,25 +154,48 @@
 
     function snapshort() {      
       i++;
+      checkDisabled();
       var frame = video.get();
       var SMPTE = video.toSMPTE(frame);
       fstart = frame;
       tstart = SMPTE;
       $('#frameNumberStart').html(frame);
       $('#timeStart').html(SMPTE);
-      var tbody = '<tr><td>' + i + '</td><td>' + frame + '</td><td>' + SMPTE + '</td><td>' + $('video').find('Source:first').attr('src') + '</td></tr>';
+      var tbody = '<tr id=\'tr_'+i+'\'>'+
+      '<td>' + i + '</td>'+
+      '<td>' + frame + '</td>'+
+      '<td>' + SMPTE + '</td>'+
+      '<td>' + $('video').find('Source:first').attr('src') + '</td>'+
+      '<td><button type="button" class="btn btn-danger" onclick="($(\'#tr_'+i+'\').remove())">Delete Row</button></td></tr>';
       $('#tbody').append(tbody);
       $("#video").attr("tabindex",-1).focus();      
     };  
 
+    function removeLastSnapshort() {
+      if(i>0){
+        $('#tr_'+i).remove();
+        i--;          
+      }
+      checkDisabled();
+    };
+    
     function clear() {
       i = 0;
+      checkDisabled();
       $('#tbody').empty();
-      var video = document.getElementById("video");
-      video.currentTime = 0;
+      var video1 = document.getElementById("video");
+      video1.currentTime = 0;
       var frame = video.get();
       $('#currentFrame').html(frame);
-    };    
+    };
+    
+    function checkDisabled(){
+      if(i>0){
+        $('#removeLastSnapshort').prop('disabled', false);
+      }else{
+        $('#removeLastSnapshort').prop('disabled', true);
+      }
+    }
 
     function tabletoExcel(table, name) {
       var uri = 'data:application/vnd.ms-excel;base64,',
@@ -198,6 +231,10 @@
     $('#Snapshort').click(function() {     
       snapshort();      
     });
+    
+    $('#removeLastSnapshort').click(function() {     
+      removeLastSnapshort();      
+    });    
 
     $('#clear').click(function() {
       clear();
